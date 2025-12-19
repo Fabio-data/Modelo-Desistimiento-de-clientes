@@ -8,6 +8,13 @@ El enfoque es completamente **end-to-end**, desde la exploración de los datos h
 **Prueba el modelo aquí:**  
 https://modelo-desistimiento-de-clientes-gvdkeqyvdkx8gyfinsabmx.streamlit.app/
 
+## ¿Cómo funciona?
+
+1. El usuario ingresa información básica del cliente.
+2. El modelo calcula la **probabilidad de desistimiento**.
+3. Si la probabilidad supera un **umbral operativo**, el cliente se marca como **riesgo potencial**.
+
+
 ---
 
 ## Objetivo
