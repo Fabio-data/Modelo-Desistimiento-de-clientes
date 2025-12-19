@@ -3,6 +3,11 @@
 Este proyecto desarrolla un **modelo de Machine Learning** para predecir el **desistimiento de clientes** en un contexto crediticio, utilizando **LightGBM**.  
 El enfoque es completamente **end-to-end**, desde la exploración de los datos hasta la evaluación e interpretación del modelo.
 
+## Demo en vivo
+
+**Prueba el modelo aquí:**  
+https://modelo-desistimiento-de-clientes-gvdkeqyvdkx8gyfinsabmx.streamlit.app/
+
 ---
 
 ## Objetivo
