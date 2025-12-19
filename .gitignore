@@ -1,0 +1,19 @@
+# Quarto / notebooks (generados al renderizar)
+*_files/
+docs/
+.quarto/
+.quarto-cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Model artifacts (opcional)
+*.joblib
+*.pkl
+
