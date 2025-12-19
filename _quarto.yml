@@ -1,0 +1,12 @@
+project:
+  type: website
+  output-dir: docs
+
+format:
+  html:
+    theme: zephyr
+    toc: true
+    toc-location: left
+    code-fold: false
+    code-tools: true
+    number-sections: true
