@@ -1,6 +1,4 @@
-# Quarto / notebooks (generados al renderizar)
-*_files/
-docs/
+# Quarto cache (no publicar)
 .quarto/
 .quarto-cache/
 
@@ -13,7 +11,11 @@ __pycache__/
 .venv/
 .env
 
-# Model artifacts (opcional)
-*.joblib
-*.pkl
+# (Opcional) Model artifacts si NO quieres subirlos
+.joblib
+.pkl
 
+
+
+/.quarto/
+**/*.quarto_ipynb
