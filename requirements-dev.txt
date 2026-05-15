@@ -1,0 +1,11 @@
+# Dependencias para ejecutar el notebook de análisis/entrenamiento
+# (incluye todo lo de la app + librerías de EDA, interpretabilidad y Excel).
+-r requirements.txt
+
+openpyxl>=3.1
+matplotlib>=3.8
+seaborn>=0.13
+plotly>=5.18
+shap>=0.44
+jupyter>=1.0
+pytest>=8.0

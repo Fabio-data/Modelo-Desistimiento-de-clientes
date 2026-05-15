@@ -33,6 +33,12 @@ st.write(
     f"**Umbral operativo del modelo:** `{best_threshold:.2f}` (si la probabilidad ≥ umbral, se marca como riesgo)."
 )
 
+st.caption(
+    "Demo educativa con **datos ficticios**. Solo se ingresan algunas variables; "
+    "el resto se imputan, por lo que las predicciones son aproximadas y no deben usarse "
+    "para decisiones reales de crédito."
+)
+
 # =========================
 # Sidebar Inputs (COP)
 # =========================
@@ -111,8 +117,7 @@ if st.button("Calcular probabilidad de desistimiento", type="primary"):
     if "CAPACIDAD_PAGO" in feature_cols: row["CAPACIDAD_PAGO"] = cap_pago
     if "RATIO_ENDEUDAMIENTO" in feature_cols: row["RATIO_ENDEUDAMIENTO"] = ratio_endeud
     if "RATIO_SOLICITUD_INGRESO" in feature_cols: row["RATIO_SOLICITUD_INGRESO"] = ratio_sol_ing
-    # Nota: en tu entrenamiento la columna se llama ESTRES_FINANCIEROO (doble O)
-    if "ESTRES_FINANCIEROO" in feature_cols: row["ESTRES_FINANCIEROO"] = estres
+    if "ESTRES_FINANCIERO" in feature_cols: row["ESTRES_FINANCIERO"] = estres
 
     # DataFrame con columnas esperadas (en el orden correcto)
     fila = pd.DataFrame([{col: row.get(col, np.nan) for col in feature_cols}])
