@@ -1,21 +1,19 @@
-# Quarto cache (no publicar)
-.quarto/
-.quarto-cache/
-
-# Jupyter
-.ipynb_checkpoints/
-
 # Python
 __pycache__/
 *.pyc
 .venv/
 .env
 
-# (Opcional) Model artifacts si NO quieres subirlos
-.joblib
-.pkl
+# Jupyter
+.ipynb_checkpoints/
+*.quarto_ipynb
 
+# Quarto (cache; el sitio publicado vive en docs/ y SÍ se versiona)
+.quarto/
+.quarto-cache/
 
+# Carpeta de trabajo que Quarto regenera (duplica librerías de docs/)
+modelo_LightGBM_files/
 
-/.quarto/
-**/*.quarto_ipynb
+# NOTA: modelo_desistimiento_lgbm.joblib SÍ se versiona a propósito:
+# la app de Streamlit lo necesita para funcionar en el despliegue.
