@@ -1,0 +1,41 @@
+{
+  "comparacion_test": [
+    {
+      "modelo": "Dummy (baseline)",
+      "roc_auc": 0.5,
+      "pr_auc": 0.3643,
+      "f1_desiste": 0.0,
+      "threshold": 0.5
+    },
+    {
+      "modelo": "Reg. Logística",
+      "roc_auc": 0.6326,
+      "pr_auc": 0.4769,
+      "f1_desiste": 0.5235,
+      "threshold": 0.5
+    },
+    {
+      "modelo": "LightGBM (sin calibrar)",
+      "roc_auc": 0.7213,
+      "pr_auc": 0.6245,
+      "f1_desiste": 0.5656,
+      "threshold": 0.5
+    },
+    {
+      "modelo": "LightGBM calibrado",
+      "roc_auc": 0.7198,
+      "pr_auc": 0.6097,
+      "f1_desiste": 0.5797,
+      "threshold": 0.3333
+    }
+  ],
+  "final": {
+    "roc_auc": 0.7198,
+    "pr_auc": 0.6097,
+    "threshold": 0.3333,
+    "recall_desiste": 0.7032,
+    "precision_desiste": 0.4931,
+    "f1_desiste": 0.5797,
+    "accuracy": 0.6286
+  }
+}
