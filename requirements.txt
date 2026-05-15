@@ -1,9 +1,9 @@
 # Dependencias de la app de Streamlit (despliegue).
 # scikit-learn se fija a la versión con la que se entrenó el modelo
-# para que el .joblib cargue sin advertencias ni incompatibilidades.
+# (train.py) para que el .joblib cargue sin incompatibilidades.
 streamlit>=1.30
 pandas>=2.0
 numpy>=1.26
-scikit-learn==1.6.1
+scikit-learn==1.5.2
 lightgbm>=4.0
 joblib>=1.3
