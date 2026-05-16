@@ -9,6 +9,7 @@ interpretabilidad (SHAP) y despliegue en Streamlit.
 
 - **App en vivo (Streamlit):** https://modelo-desistimiento-de-clientes-gvdkeqyvdkx8gyfinsabmx.streamlit.app/
 - **Informe del análisis (Quarto):** https://fabio-data.github.io/Modelo-Desistimiento-de-clientes/
+- **Portafolio del autor:** https://fabio-marulanda-portfolio.vercel.app/
 
 ## Datos
 
