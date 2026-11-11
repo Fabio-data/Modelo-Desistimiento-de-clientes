@@ -1,171 +1,108 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
+"""App de Streamlit: estima la probabilidad de que un cliente desista."""
 import joblib
+import pandas as pd
+import streamlit as st
 
-# =========================
-# Config
-# =========================
-st.set_page_config(
-    page_title="Desistimiento de Clientes",
-    page_icon="🔍",
-    layout="wide"
-)
+from features import agregar_variables
 
-def fmt_cop(x: float) -> str:
-    # 1.234.567 COP
-    return f"$ {x:,.0f}".replace(",", ".") + " COP"
+ARTIFACT_PATH = "modelo_desistimiento_lgbm.joblib"
+
+# Variables que siempre se piden: etiqueta y paso del control numérico.
+PRINCIPALES = {
+    "INGRESOS": ("Ingresos mensuales (COP)", 200_000.0),
+    "EGRESOS": ("Egresos mensuales (COP)", 200_000.0),
+    "VALOR_SOLICITADO": ("Valor del crédito solicitado (COP)", 500_000.0),
+    "PERSONAS_CARGO": ("Personas a cargo", 1.0),
+    "TIPO_CONTRATO": ("Tipo de contrato", None),
+}
+
+st.set_page_config(page_title="Desistimiento de Clientes", page_icon="🔍", layout="wide")
+
 
 @st.cache_resource
-def cargar_artifact():
-    artifact = joblib.load("modelo_desistimiento_lgbm.joblib")
-    return artifact["modelo"], float(artifact["best_threshold"]), artifact["feature_cols"]
+def cargar_artifact() -> dict:
+    return joblib.load(ARTIFACT_PATH)
 
-modelo, best_threshold, feature_cols = cargar_artifact()
 
-# =========================
-# UI - Header
-# =========================
+def fmt_cop(x: float) -> str:
+    return f"$ {x:,.0f}".replace(",", ".") + " COP"
+
+
+artifact = cargar_artifact()
+modelo = artifact["modelo"]
+umbral = float(artifact["best_threshold"])
+tipicos = artifact["valores_tipicos"]
+categorias = artifact["categorias"]
+
+
+def pedir(col: str, contenedor, etiqueta: str | None = None, paso: float = 1.0):
+    """Control de entrada para `col`, prellenado con su valor típico."""
+    etiqueta = etiqueta or col.replace("_", " ").capitalize()
+    if col in categorias:
+        opciones = categorias[col]
+        return contenedor.selectbox(etiqueta, opciones, index=opciones.index(tipicos[col]))
+    return contenedor.number_input(
+        etiqueta, value=float(tipicos[col]), step=paso, format="%.0f")
+
+
 st.title("🔍 Probabilidad de Desistimiento de Clientes")
 st.write(
-    "Ingresa datos básicos del cliente y el modelo estimará la **probabilidad de desistir** "
-    "durante el proceso de solicitud de crédito.\n\n"
-    f"**Umbral operativo del modelo:** `{best_threshold:.2f}` (si la probabilidad ≥ umbral, se marca como riesgo)."
+    "Ingresa los datos del cliente y el modelo estimará la **probabilidad de desistir** "
+    "durante la solicitud de crédito. "
+    f"Si la probabilidad supera el umbral operativo (`{umbral:.2f}`), se marca como riesgo."
 )
-
 st.caption(
-    "Demo educativa con **datos ficticios**. Solo se ingresan algunas variables; "
-    "el resto se imputan, por lo que las predicciones son aproximadas y no deben usarse "
-    "para decisiones reales de crédito."
+    "Demo educativa con **datos ficticios**: no debe usarse para decisiones reales de "
+    "crédito. Las variables que no cambies usan el valor típico del conjunto de entrenamiento."
 )
 
-# =========================
-# Sidebar Inputs (COP)
-# =========================
-st.sidebar.header("Parámetros del cliente (COP)")
+# ---- Entradas ----
+st.sidebar.header("Datos del cliente")
+valores = {
+    col: pedir(col, st.sidebar, etiqueta, paso or 1.0)
+    for col, (etiqueta, paso) in PRINCIPALES.items()
+}
+with st.expander("Más variables (opcional)"):
+    columnas = st.columns(3)
+    resto = [c for c in tipicos if c not in PRINCIPALES]
+    for i, col in enumerate(resto):
+        valores[col] = pedir(col, columnas[i % 3])
 
-ingresos = st.sidebar.number_input(
-    "Ingresos mensuales",
-    min_value=0.0,
-    value=2_000_000.0,
-    step=200_000.0,
-    format="%.0f"
-)
-st.sidebar.caption(f"Ingresos: {fmt_cop(ingresos)}")
-
-egresos = st.sidebar.number_input(
-    "Egresos mensuales",
-    min_value=0.0,
-    value=1_000_000.0,
-    step=200_000.0,
-    format="%.0f"
-)
-st.sidebar.caption(f"Egresos: {fmt_cop(egresos)}")
-
-valor_solicitado = st.sidebar.number_input(
-    "Valor del crédito solicitado",
-    min_value=0.0,
-    value=3_000_000.0,
-    step=500_000.0,
-    format="%.0f"
-)
-st.sidebar.caption(f"Crédito solicitado: {fmt_cop(valor_solicitado)}")
-
-personas_cargo = st.sidebar.number_input(
-    "Personas a cargo",
-    min_value=0,
-    value=1,
-    step=1
-)
-
-tipo_contrato = st.sidebar.selectbox(
-    "Tipo de contrato",
-    options=["Indefinido", "Término fijo", "Temporal", "Otra"],
-    index=3
-)
-
-# =========================
-# Validaciones / Alertas
-# =========================
+ingresos, egresos = valores["INGRESOS"], valores["EGRESOS"]
 if ingresos <= 0:
-    st.warning("⚠️ Ingresos en 0 distorsiona ratios (endeudamiento/solicitud). Ajusta para una predicción más confiable.")
-if egresos > ingresos and ingresos > 0:
-    st.info("ℹ️ Egresos mayores que ingresos: esto suele incrementar el riesgo. Verifica si el dato es correcto.")
+    st.warning("Con ingresos en 0 los ratios se disparan y la predicción no es confiable.")
+elif egresos > ingresos:
+    st.info("Los egresos superan a los ingresos: verifica que el dato sea correcto.")
 
-st.write("Completa los datos en la izquierda y presiona **Calcular**.")
-
-# =========================
-# Predict
-# =========================
+# ---- Predicción ----
 if st.button("Calcular probabilidad de desistimiento", type="primary"):
-    # Construimos solo lo necesario y respetamos feature_cols
-    row = {}
-
-    # Base
-    if "INGRESOS" in feature_cols: row["INGRESOS"] = ingresos
-    if "EGRESOS" in feature_cols: row["EGRESOS"] = egresos
-    if "VALOR_SOLICITADO" in feature_cols: row["VALOR_SOLICITADO"] = valor_solicitado
-    if "PERSONAS_CARGO" in feature_cols: row["PERSONAS_CARGO"] = personas_cargo
-    if "TIPO_CONTRATO" in feature_cols: row["TIPO_CONTRATO"] = tipo_contrato
-
-    # Features derivadas (según tu entrenamiento)
-    cap_pago = ingresos - egresos
-    ratio_endeud = egresos / (ingresos + 1e-6)
-    ratio_sol_ing = valor_solicitado / (ingresos + 1e-6)
-    estres = ratio_endeud + ratio_sol_ing
-
-    if "CAPACIDAD_PAGO" in feature_cols: row["CAPACIDAD_PAGO"] = cap_pago
-    if "RATIO_ENDEUDAMIENTO" in feature_cols: row["RATIO_ENDEUDAMIENTO"] = ratio_endeud
-    if "RATIO_SOLICITUD_INGRESO" in feature_cols: row["RATIO_SOLICITUD_INGRESO"] = ratio_sol_ing
-    if "ESTRES_FINANCIERO" in feature_cols: row["ESTRES_FINANCIERO"] = estres
-
-    # DataFrame con columnas esperadas (en el orden correcto)
-    fila = pd.DataFrame([{col: row.get(col, np.nan) for col in feature_cols}])
-
-    # Predicción
+    fila = agregar_variables(pd.DataFrame([valores]))[artifact["feature_cols"]]
     proba = float(modelo.predict_proba(fila)[0, 1])
-    pred = int(proba >= best_threshold)
 
-    # Riesgo alineado al umbral (no cortes arbitrarios)
-    low_cut = best_threshold * 0.75
-    high_cut = best_threshold * 1.25
-    if proba < low_cut:
-        nivel = "Bajo"
-        accion = "Flujo normal (sin intervención inmediata)."
-    elif proba < high_cut:
-        nivel = "Medio"
-        accion = "Seguimiento recomendado (contacto en 24h / revisar oferta)."
+    # Niveles de riesgo relativos al umbral del modelo, no cortes arbitrarios.
+    if proba < umbral * 0.75:
+        nivel, accion = "Bajo", "Flujo normal (sin intervención inmediata)."
+    elif proba < umbral * 1.25:
+        nivel, accion = "Medio", "Seguimiento recomendado (contacto en 24 h / revisar oferta)."
     else:
-        nivel = "Alto"
-        accion = "Intervención prioritaria (contacto rápido / oferta asistida)."
+        nivel, accion = "Alto", "Intervención prioritaria (contacto rápido / oferta asistida)."
 
-    # =========================
-    # UI Results
-    # =========================
     st.subheader("Resultado del modelo")
-
     col1, col2, col3 = st.columns([1, 1, 2])
-    with col1:
-        st.metric("Probabilidad de DESISTIR", f"{proba*100:.1f}%")
-    with col2:
-        st.metric("Nivel de riesgo", nivel)
-    with col3:
-        st.write("**Acción sugerida:**")
-        st.write(accion)
+    col1.metric("Probabilidad de desistir", f"{proba:.1%}")
+    col2.metric("Nivel de riesgo", nivel)
+    col3.write(f"**Acción sugerida:** {accion}")
 
-    if pred == 1:
-        st.error("⚠️ El modelo estima **ALTA PROBABILIDAD DE DESISTIR** (por encima del umbral).")
+    if proba >= umbral:
+        st.error("⚠️ Por encima del umbral: **alta probabilidad de desistir**.")
     else:
-        st.success("✅ El modelo estima que el cliente **PROBABLEMENTE NO DESISTE** (por debajo del umbral).")
+        st.success("✅ Por debajo del umbral: el cliente **probablemente no desiste**.")
 
-    st.caption(f"Umbral usado por el modelo: {best_threshold:.2f}")
+    datos = fila.iloc[0]
+    st.write("### Señales principales")
+    st.write(f"- **Capacidad de pago:** {fmt_cop(datos['CAPACIDAD_PAGO'])}")
+    st.write(f"- **Egresos / ingresos:** {datos['RATIO_ENDEUDAMIENTO']:.1%}")
+    st.write(f"- **Crédito solicitado / ingresos:** {datos['RATIO_SOLICITUD_INGRESO']:.1%}")
 
-    # Explicación rápida (señales principales)
-    st.write("### Señales principales (para interpretación rápida)")
-    st.write(f"- **Capacidad de pago:** {fmt_cop(cap_pago)}")
-    st.write(f"- **Ratio endeudamiento (egresos/ingresos):** {ratio_endeud*100:.1f}%")
-    st.write(f"- **Ratio solicitud/ingreso:** {ratio_sol_ing*100:.1f}%")
-    st.write(f"- **Estrés financiero (suma de ratios):** {estres*100:.1f}%")
-
-    with st.expander("Ver datos enviados al modelo (debug)"):
+    with st.expander("Ver datos enviados al modelo"):
         st.dataframe(fila)

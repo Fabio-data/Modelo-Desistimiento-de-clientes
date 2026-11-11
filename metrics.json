@@ -5,37 +5,50 @@
       "roc_auc": 0.5,
       "pr_auc": 0.3643,
       "f1_desiste": 0.0,
+      "recall_desiste": 0.0,
+      "precision_desiste": 0.0,
+      "accuracy": 0.6357,
       "threshold": 0.5
     },
     {
       "modelo": "Reg. Logística",
-      "roc_auc": 0.6326,
-      "pr_auc": 0.4769,
-      "f1_desiste": 0.5235,
+      "roc_auc": 0.6329,
+      "pr_auc": 0.4779,
+      "f1_desiste": 0.5239,
+      "recall_desiste": 0.6254,
+      "precision_desiste": 0.4508,
+      "accuracy": 0.586,
       "threshold": 0.5
     },
     {
       "modelo": "LightGBM (sin calibrar)",
-      "roc_auc": 0.7213,
+      "roc_auc": 0.7207,
       "pr_auc": 0.6245,
-      "f1_desiste": 0.5656,
+      "f1_desiste": 0.5664,
+      "recall_desiste": 0.5711,
+      "precision_desiste": 0.5617,
+      "accuracy": 0.6815,
       "threshold": 0.5
     },
     {
       "modelo": "LightGBM calibrado",
-      "roc_auc": 0.7198,
-      "pr_auc": 0.6097,
+      "roc_auc": 0.7202,
+      "pr_auc": 0.6156,
       "f1_desiste": 0.5797,
-      "threshold": 0.3333
+      "recall_desiste": 0.7167,
+      "precision_desiste": 0.4867,
+      "accuracy": 0.6215,
+      "threshold": 0.3043
     }
   ],
   "final": {
-    "roc_auc": 0.7198,
-    "pr_auc": 0.6097,
-    "threshold": 0.3333,
-    "recall_desiste": 0.7032,
-    "precision_desiste": 0.4931,
+    "modelo": "LightGBM calibrado",
+    "roc_auc": 0.7202,
+    "pr_auc": 0.6156,
     "f1_desiste": 0.5797,
-    "accuracy": 0.6286
+    "recall_desiste": 0.7167,
+    "precision_desiste": 0.4867,
+    "accuracy": 0.6215,
+    "threshold": 0.3043
   }
 }
